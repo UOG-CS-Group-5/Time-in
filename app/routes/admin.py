@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from flask_login import login_required
+from flask_login import login_required, current_user
 from app.extensions import db, bcrypt
 from app.models.user import User
 from app.extensions import admin_required
@@ -54,6 +54,8 @@ def add_user():
 def delete_user(user_id):
     if user_id == 1:
         return jsonify({'error': 'Cannot delete the default admin user'}), 403
+    if user_id == current_user.id:
+        return jsonify({'error': 'Cannot delete your own user account'}), 403
 
     user = User.query.get_or_404(user_id)
     db.session.delete(user)
