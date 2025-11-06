@@ -12,6 +12,7 @@ def login():
         raw_password = request.form['password']
         user = User.query.filter_by(username=username).first()
 
+        # user exists and password matches
         if user and bcrypt.check_password_hash(user.password, raw_password):
             login_user(user)
             return redirect(url_for('general.home'))

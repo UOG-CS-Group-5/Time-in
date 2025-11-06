@@ -14,6 +14,7 @@ class User(db.Model, UserMixin):
 # make sure a default admin user exists
 def create_default_admin(default_username, default_password):
     if not User.query.filter_by(username=default_username).first():
+        # already salts the password
         hashed_password = bcrypt.generate_password_hash(default_password).decode('utf-8')
         admin_user = User(username=default_username, password=hashed_password, 
                           is_admin=True, salary=0.0)

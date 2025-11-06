@@ -4,8 +4,10 @@ from app.extensions import db, bcrypt
 from app.models.user import User
 from app.extensions import admin_required
 
+# Blueprint for admin routes prefixed with /admin
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
+# must be logged in and an admin
 @bp.route('/users', methods=['GET'])
 @login_required
 @admin_required
@@ -28,6 +30,7 @@ def update_user(user_id):
         return jsonify({'error': 'Salary cannot be negative'}), 400
     
     user.username = data.get('username', user.username)
+    # if no uploaded password, keep existing one
     user.password = (bcrypt.generate_password_hash(data['password']).decode('utf-8') 
                      if ('password' in data and data['password']) else user.password)
     user.is_admin = data.get('is_admin', user.is_admin)
@@ -40,6 +43,7 @@ def update_user(user_id):
 @admin_required
 def add_user():
     data = request.json
+    # salted automatically. default not admin
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
     new_user = User(username=data['username'], password=hashed_password, 
                     is_admin=data.get('is_admin', False), 
@@ -52,6 +56,7 @@ def add_user():
 @login_required
 @admin_required
 def delete_user(user_id):
+    # prevent deletion of default admin user or self-deletion
     if user_id == 1:
         return jsonify({'error': 'Cannot delete the default admin user'}), 403
     if user_id == current_user.id:

@@ -6,6 +6,7 @@ from flask_login import current_user
 
 def create_app():
     app = Flask(__name__)
+    # load config from config.py
     app.config.from_object('config.Config')
 
     # Initialize extensions
@@ -25,7 +26,9 @@ def create_app():
         g.user = current_user
 
     with app.app_context():
+        # Create database tables if they don't exist
         db.create_all()
+        # create default admin if not exists
         create_default_admin(
             default_username=app.config.get('DEFAULT_ADMIN_USER', 'admin'),
             default_password=app.config.get('DEFAULT_ADMIN_PASS', 'password')

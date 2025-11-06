@@ -7,6 +7,7 @@ bp = Blueprint('general', __name__)
 @bp.route('/')
 @login_required
 def home():
+    # if user is admin, redirect to admin dashboard
     if current_user.is_admin:
         return redirect(url_for('general.admin_dashboard'))
     else:

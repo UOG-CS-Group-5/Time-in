@@ -9,6 +9,7 @@
 
         <v-row>
             <v-col>
+                <!-- data table using the defined headers and items -->
                 <v-data-table
                     :headers="headers"
                     :items="users"
@@ -22,14 +23,17 @@
                         </v-toolbar>
                     </template>
                     <template v-slot:item.actions="{ item }">
+                        <!-- pencil to edit user -->
                         <v-btn icon @click="openEditUserDialog(item)">
                             <v-icon>mdi-pencil</v-icon>
                         </v-btn>
+                        <!-- trash can to delete -->
                         <v-btn icon @click="deleteUser(item.id)">
                             <v-icon>mdi-delete</v-icon>
                         </v-btn>
                     </template>
                     <template v-slot:item.salary="{ item }">
+                        <!-- display with 2 decimals -->
                         {{ item.salary.toFixed(2) }}
                     </template>
                 </v-data-table>
@@ -73,7 +77,7 @@
             </v-card>
         </v-dialog>
 
-        <!-- Error Snackbar -->
+        <!-- Error Snackbar (drop down popup) -->
         <v-snackbar v-model="errorSnackbar" color="red" top>
             {{ errorMessage }}
             <v-btn color="white" text @click="errorSnackbar = false">Close</v-btn>
@@ -102,6 +106,8 @@ module.exports = {
                 is_admin: false,
                 salary: 0.0,
             },
+            // variable to tell us what action to take
+            // when adding or editing users
             isEdit: false,
             passwordRequired: value => !!value || 'Password is required',
             errorSnackbar: false,
