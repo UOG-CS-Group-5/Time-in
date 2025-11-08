@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Time-In{% endblock %}</title>
     <!-- Vuetify CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.6.15/dist/vuetify.min.css" rel="stylesheet">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/vuetify@2.6.15/dist/vuetify.min.css" rel="stylesheet"> -->
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
     <!-- Material Design Icons -->
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
 </head>
@@ -25,7 +26,10 @@
             <v-main>
                 <v-container>
                     <!-- inputs the page here -->
-                    <component :is="'{{ componentName }}'"></component>
+                    <component 
+                        :is="'{{ componentName }}'"
+                        :user_id="{{ g.user.id or 'null' }}"
+                    ></component>
                 </v-container>
             </v-main>
         </v-app>
@@ -33,9 +37,9 @@
 
     <!-- still using old vue and vuetify. can update if needed -->
     <!-- Vue.js -->
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
     <!-- Vuetify JS -->
-    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.6.15/dist/vuetify.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
     <!-- QoL .vue parser -->
     <script src="https://unpkg.com/http-vue-loader"></script>
 

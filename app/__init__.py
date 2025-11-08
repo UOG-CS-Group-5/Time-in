@@ -1,7 +1,7 @@
 from flask import Flask, g
 from app.extensions import db, bcrypt, login_manager
-from app.routes import auth, general, admin
-from app.models.user import create_default_admin
+from app.routes import auth, general, admin, punch
+from app.models.user import create_default_admin, create_example_employee
 from flask_login import current_user
 
 def create_app():
@@ -18,6 +18,7 @@ def create_app():
     app.register_blueprint(auth.bp)
     app.register_blueprint(general.bp)
     app.register_blueprint(admin.bp)
+    app.register_blueprint(punch.bp)
 
     # Load the current user before each request 
     # for use in templating
@@ -33,5 +34,6 @@ def create_app():
             default_username=app.config.get('DEFAULT_ADMIN_USER', 'admin'),
             default_password=app.config.get('DEFAULT_ADMIN_PASS', 'password')
         )
+        create_example_employee()
 
     return app

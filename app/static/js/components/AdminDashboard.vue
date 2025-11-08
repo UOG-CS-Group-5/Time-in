@@ -15,6 +15,9 @@
                     :items="users"
                     item-value="id"
                     class="elevation-1"
+                    v-model="selected_user"
+                    :single-select="true"
+                    @click:row="selectRow"
                 >
                     <template v-slot:top>
                         <v-toolbar flat>
@@ -37,6 +40,13 @@
                         {{ item.salary.toFixed(2) }}
                     </template>
                 </v-data-table>
+            </v-col>
+        </v-row>
+
+        <v-row>
+            <v-col>
+                <h2>Punch Calendar</h2>
+                <punch-calendar :user_id="selected_user_or_self"/>
             </v-col>
         </v-row>
 
@@ -86,9 +96,20 @@
 </template>
 
 <script>
+// can't use url_from here, 
+// so let's just hope absolute pathing doesn't break
+const PunchCalendar = httpVueLoader("/static/js/components/PunchCalendar.vue")
+
 module.exports = {
+    components: {
+        PunchCalendar
+    },
+    props: {
+        user_id: { type: Number, required: true }
+    },
     data() {
         return {
+            selected_user: [],
             users: [],
             headers: [
                 { text: "ID", value: "id" },
@@ -114,6 +135,11 @@ module.exports = {
             errorMessage: "",
         };
     },
+    computed: {
+        selected_user_or_self() {
+            return this.selected_user.length > 0 ? this.selected_user[0].id : this.user_id
+        }
+    },
     methods: {
         async fetchUsers() {
             try {
@@ -126,6 +152,11 @@ module.exports = {
                 this.errorMessage = "Failed to fetch users. Please try again.";
                 this.errorSnackbar = true;
             }
+        },
+        selectRow(event, { item }) {
+            // toggle selection
+            const selected = this.selected_user.length == 0 ? null : this.selected_user[0]
+            this.selected_user = selected?.id === item.id ? [] : [item]
         },
         openAddUserDialog() {
             this.dialogTitle = "Add User";

@@ -5,11 +5,18 @@
             label="Example"
         ></v-text-field>
         <p>The text: {{ example }}</p>
+
+        <punch-calendar/>
     </v-container>
 </template>
 
 <script>
+const PunchCalendar = httpVueLoader("/static/js/components/PunchCalendar.vue")
+
 module.exports = {
+    components: {
+        PunchCalendar
+    },
     data() {
         return {
             // define reactive variables 
