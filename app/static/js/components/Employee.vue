@@ -6,7 +6,9 @@
         ></v-text-field>
         <p>The text: {{ example }}</p>
 
-        <punch-calendar/>
+        <punch-calendar
+            :salary="salary"
+        />
     </v-container>
 </template>
 
@@ -14,6 +16,9 @@
 const PunchCalendar = httpVueLoader("/static/js/components/PunchCalendar.vue")
 
 module.exports = {
+    props: {
+        salary: { type: Number, required: true }
+    },
     components: {
         PunchCalendar
     },

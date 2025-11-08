@@ -52,7 +52,7 @@ def get_salary_for_range(user, start_datetime, end_datetime):
 
     return total_salary
 
-def insert_punches(user, first_datetime, second_datetime):
+def insert_punches(user, first_datetime, second_datetime, salary=None):
     if first_datetime >= second_datetime:
         raise ValueError("First datetime must be earlier than second datetime.")
     
@@ -61,18 +61,17 @@ def insert_punches(user, first_datetime, second_datetime):
         raise ValueError("Inserted punches overlap with existing punches.")
     
 
-    p1 = save_punch(user, first_datetime, do_commit=False)
-    p2 = save_punch(user, second_datetime)
+    p1 = save_punch(user, first_datetime, do_commit=False, salary=salary)
+    p2 = save_punch(user, second_datetime, salary=salary)
     return [p1, p2]
 
-def punch_clock(user, date_time=None):
-    print('saving punch for user', user.id, 'at', date_time)
+def punch_clock(user, date_time=None, salary=None):
     last = get_last_punch(user)
     if last and date_time is not None and last.timestamp_utc >= date_time:
         raise ValueError("Cannot punch with earlier timestamp than last punch.")
-    return save_punch(user, date_time)
+    return save_punch(user, date_time, salary=salary)
 
-def save_punch(user, date_time=None, do_commit=True):
+def save_punch(user, date_time=None, do_commit=True, salary=None):
     # standard to use UTC 
     date_time = date_time or datetime.now(timezone.utc)
     # logic for punching clock in/out
@@ -84,11 +83,15 @@ def save_punch(user, date_time=None, do_commit=True):
         else PunchType.OUT
     )
 
+    salary = salary if salary is not None else user.salary
+    if salary < 0:
+        raise ValueError("Salary cannot be negative.")
+
     new_punch = Punch(
         user_id=user.id,
         timestamp=date_time,
         type=punch_type,
-        salary_at_time=user.salary
+        salary_at_time=salary
     )
 
     db.session.add(new_punch)

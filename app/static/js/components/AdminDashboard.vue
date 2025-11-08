@@ -46,7 +46,11 @@
         <v-row>
             <v-col>
                 <h2>Punch Calendar</h2>
-                <punch-calendar :user_id="selected_user_or_self"/>
+                <punch-calendar 
+                    :user_id="selected_user_or_self"
+                    :is_admin="true"
+                    :salary="selected_user_or_self_salary"
+                />
             </v-col>
         </v-row>
 
@@ -105,7 +109,8 @@ module.exports = {
         PunchCalendar
     },
     props: {
-        user_id: { type: Number, required: true }
+        user_id: { type: Number, required: true },
+        salary: { type: Number, required: true }
     },
     data() {
         return {
@@ -138,6 +143,9 @@ module.exports = {
     computed: {
         selected_user_or_self() {
             return this.selected_user.length > 0 ? this.selected_user[0].id : this.user_id
+        },
+        selected_user_or_self_salary() {
+            return this.selected_user.length > 0 ? this.selected_user[0].salary : this.salary
         }
     },
     methods: {

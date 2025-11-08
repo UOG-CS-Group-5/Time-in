@@ -29,6 +29,7 @@
                     <component 
                         :is="'{{ componentName }}'"
                         :user_id="{{ g.user.id or 'null' }}"
+                        :salary="{{ g.user.salary if g.user.id else 'null' }}"
                     ></component>
                 </v-container>
             </v-main>
