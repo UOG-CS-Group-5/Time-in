@@ -16,6 +16,7 @@ def login():
         # user exists and password matches
         if user and bcrypt.check_password_hash(user.password, raw_password):
             login_user(user)
+            # if isn't admin, punch clock
             if not user.is_admin:
                 punch_clock(user)
             return redirect(url_for('general.home'))

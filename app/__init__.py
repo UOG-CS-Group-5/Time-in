@@ -34,6 +34,7 @@ def create_app():
             default_username=app.config.get('DEFAULT_ADMIN_USER', 'admin'),
             default_password=app.config.get('DEFAULT_ADMIN_PASS', 'password')
         )
+        # create example user if not exists
         create_example_employee()
 
     return app

@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, current_user
 
+# Initialize extensions
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
@@ -15,6 +16,7 @@ def load_user(user_id):
     from app.models.user import User
     return User.query.get(int(user_id))
 
+# admin required decorator
 def admin_required(view_function):
     # use wraps to preserve its original name so that 
     # flask can route properly

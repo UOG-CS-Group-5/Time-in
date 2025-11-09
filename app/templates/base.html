@@ -26,6 +26,8 @@
             <v-main>
                 <v-container>
                     <!-- inputs the page here -->
+                    <!-- {{ }} is flask input in this case -->
+                    <!-- usually it's vue execution -->
                     <component 
                         :is="'{{ componentName }}'"
                         :user_id="{{ g.user.id or 'null' }}"
@@ -51,10 +53,14 @@
             vuetify: new Vuetify(),
             // Change Vue's delimiters so that flask doesn't try to 
             // interpret it as python
+            // note that this isn't needed in subcomponents 
+            // since httpVueLoader/vue is making it once removed from flask's view
             delimiters: ['[[', ']]'],
             components: {
                 // using httpVueLoader so we can have the
                 // convenience of using .vue files
+                // {{ }} here is executing on flask-side and 
+                // including it in before being send to the browser
                 {{ componentName }}: httpVueLoader("{{ url_for('static', filename='js/components/' ~ componentName ~ '.vue') }}")
             },
             data() {

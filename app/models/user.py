@@ -37,12 +37,11 @@ def create_example_employee():
         db.session.commit()
 
         # add some example punches
-        from app.models.punch import Punch, PunchType
         from app.services.punch_service import punch_clock
         last_week = datetime.now(timezone.utc) - timedelta(days=8)
         last_week = last_week.replace(hour=0, minute=0)
         for i in range(7):
-            # +10 for chst
+            # -10 for chst
             in_time = last_week + timedelta(days=i, hours=9-10, minutes=random.randint(0,60))
             out_time = last_week + timedelta(days=i, hours=17-10, minutes=random.randint(0,60))
             punch_clock(employee_user, in_time)

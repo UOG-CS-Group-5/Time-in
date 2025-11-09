@@ -9,6 +9,8 @@ def get_last_punch(user):
         .order_by(Punch.timestamp.desc()) \
         .first()
 
+# get the most recent punch before date_time
+# or most recent punch if date_time is None
 def get_prev_punch(user, date_time=None):
     date_time = date_time or datetime.now(timezone.utc)
     return Punch.query \
@@ -18,6 +20,7 @@ def get_prev_punch(user, date_time=None):
         .order_by(Punch.timestamp.desc()) \
         .first()
 
+# get the next punch after date_time
 def get_next_punch(user, date_time):
     return Punch.query \
         .filter(
@@ -26,6 +29,7 @@ def get_next_punch(user, date_time):
         .order_by(Punch.timestamp.asc()) \
         .first()
 
+# get all punches in a datetime range
 def get_punches_in_range(user, start_datetime, end_datetime):
     if start_datetime >= end_datetime:
         end_datetime, start_datetime = start_datetime, end_datetime
@@ -38,6 +42,7 @@ def get_punches_in_range(user, start_datetime, end_datetime):
         .order_by(Punch.timestamp.asc()) \
         .all()
 
+# calculate total salary for punches in a datetime range
 # account for salary changes over punches
 def get_salary_for_range(user, start_datetime, end_datetime):
     punches = get_punches_in_range(user, start_datetime, end_datetime)
@@ -52,6 +57,7 @@ def get_salary_for_range(user, start_datetime, end_datetime):
 
     return total_salary
 
+# insert a pair of punches at specified datetimes
 def insert_punches(user, first_datetime, second_datetime, salary=None):
     if first_datetime >= second_datetime:
         raise ValueError("First datetime must be earlier than second datetime.")
@@ -61,16 +67,20 @@ def insert_punches(user, first_datetime, second_datetime, salary=None):
         raise ValueError("Inserted punches overlap with existing punches.")
     
 
+    # don't commit after first punch so both are added in one transaction
+    # and can be rolled back together on error 
     p1 = save_punch(user, first_datetime, do_commit=False, salary=salary)
     p2 = save_punch(user, second_datetime, salary=salary)
     return [p1, p2]
 
+# punch clock in/out at specified datetime (or now)
 def punch_clock(user, date_time=None, salary=None):
     last = get_last_punch(user)
     if last and date_time is not None and last.timestamp_utc >= date_time:
         raise ValueError("Cannot punch with earlier timestamp than last punch.")
     return save_punch(user, date_time, salary=salary)
 
+# create a new punch record optionally with specified salary
 def save_punch(user, date_time=None, do_commit=True, salary=None):
     # standard to use UTC 
     date_time = date_time or datetime.now(timezone.utc)

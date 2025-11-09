@@ -13,7 +13,7 @@ bp = Blueprint('punch', __name__)
 @admin_required
 def get_closest_salary():
     """Endpoint to get the closest salary for a specified user
-    at a given datetime (before preferred)."""
+    at a given datetime (past punch preferred)."""
     user_id = int(request.args.get('user_id', None))
     date_str = request.args.get('datetime', None)
     if date_str is None:
@@ -28,6 +28,7 @@ def get_closest_salary():
     if user is None:
         return 'User not found', 404
 
+    # check prev punch first then next punch
     try:
         closest_punch = get_prev_punch(user, date)
         if closest_punch is None:
@@ -45,7 +46,8 @@ def punch_clock_route():
     """Endpoint to punch clock in/out for an employee.
     if user_id provided and is admin, punch for that user
     if datetime provided, use that timestamp as the punch time
-    if datetime_end provided, use that timestamp as the end time
+    if datetime_end provided, use that timestamp as the end time (2 punches)
+    if salary provided, use that salary for the punch(es) (if admin)
     """
     user_id = int(request.args.get('user_id', current_user.id))
     date_str = request.args.get('datetime', None)
@@ -67,7 +69,6 @@ def punch_clock_route():
     if date_end_str is not None and date_str is None:
         return 'datetime must be provided if datetime_end is provided', 400
 
-    # do I need to mess with UTC here?
     dt = datetime.fromisoformat(date_str) if date_str else None
     end_dt = datetime.fromisoformat(date_end_str) if date_end_str else None
     
@@ -75,6 +76,8 @@ def punch_clock_route():
     
     last_punch = get_last_punch(user)
 
+    # if only a single date was given (which would mean a single 
+    # punch is wanted) ensure it's after the last punch
     if end_dt is None and last_punch and last_punch.timestamp_utc >= dt:
         return 'Cannot punch with earlier timestamp than last punch', 400
 
@@ -146,6 +149,7 @@ def delete_punch_route():
             return 'punch_id must be earlier than punch_end_id', 400
     
     last = get_last_punch(punch.user)
+    # if only deleting one punch, ensure it's the last punch
     if punch_end_id is None and last and last.id != int(punch_id):
         return 'Can only delete the last punch when providing only one punch id', 400
 

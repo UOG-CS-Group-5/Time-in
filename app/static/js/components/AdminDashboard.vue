@@ -100,7 +100,7 @@
 </template>
 
 <script>
-// can't use url_from here, 
+// can't use flask's url_from here, 
 // so let's just hope absolute pathing doesn't break
 const PunchCalendar = httpVueLoader("/static/js/components/PunchCalendar.vue")
 
@@ -116,6 +116,7 @@ module.exports = {
         return {
             selected_user: [],
             users: [],
+            // headers for user table
             headers: [
                 { text: "ID", value: "id" },
                 { text: "Username", value: "username" },
@@ -144,6 +145,7 @@ module.exports = {
         selected_user_or_self() {
             return this.selected_user.length > 0 ? this.selected_user[0].id : this.user_id
         },
+        // to give to punch calendar
         selected_user_or_self_salary() {
             return this.selected_user.length > 0 ? this.selected_user[0].salary : this.salary
         }
@@ -220,6 +222,7 @@ module.exports = {
             this.dialog = false;
         },
     },
+    // get users at start
     async mounted() {
         await this.fetchUsers();
     },

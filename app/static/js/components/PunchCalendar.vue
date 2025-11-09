@@ -23,6 +23,7 @@
         <v-card-text>
           <v-form ref="form">
             <v-row>
+              <!-- start time -->
               <v-col cols="6">
                 <v-menu
                   v-model="showStartTimeSelect"
@@ -50,6 +51,7 @@
                   ></v-time-picker>
                 </v-menu>
               </v-col>
+              <!-- end time -->
               <v-col cols="6">
                 <v-menu
                   v-model="showEndTimeSelect"
@@ -139,16 +141,17 @@ module.exports = {
   },
   data() {
     return {
-      start_time: "12:30",
+      // list of punches
       punches: [],
+      // current day/week looking at
       currentDate: new Date(),
+      // selected times
       timeSelect: [],
+      // form fields
       form: {...EMPTY_FORM},
-      prev_form_start_time: null,
       dialog: false,
       showStartTimeSelect: false,
       showEndTimeSelect: false,
-      punch_map: [],
       errorSnackbar: false,
       errorMessage: "",
       successSnackbar: false,
@@ -169,6 +172,8 @@ module.exports = {
       return title
     },
     events() {
+      // convert from punch entries
+      // into events with start/end times
       const ret = []
       let punch = {origin: []}
       this.punches.forEach((p) => {
@@ -185,12 +190,12 @@ module.exports = {
           ret.push(punch)
           punch = {origin: []}
         }
-        this.punch_map[id] = p
       });
       // in punch without an out
       if (punch.start) {
         ret.push(punch)
       }
+      // add selected datetimes with lighter color
       if (this.timeSelect.length > 0) {
         punch = {origin: []}
         punch.start = this.formatDate(this.timeSelect[0])
@@ -218,12 +223,15 @@ module.exports = {
       this.dialog = false
     },
     onTimeClick({ date, time }) {
+      // convert time clicked into a datetime
       const dt = new Date(date)
       const [hour, min] = time.split(':').map(v => parseInt(v))
       dt.setHours(hour, min, 0, 0)
+      // if clicked third time, deselect everything
       if (this.timeSelect.length == 2) {
         this.timeSelect = []
       } else if (this.timeSelect.length == 1) {
+        // put 2nd datetime selected in in order
         if (dt < this.timeSelect[0]) {
           this.timeSelect.unshift(dt)
         } else {
@@ -234,6 +242,7 @@ module.exports = {
       }
     },
     onEventClick({ event }, nativeEvent) {
+      // prep form
       const nf = {...EMPTY_FORM, origin: []}
       nf.start_date = event.start.slice(0,10)
       nf.start_time = event.start.slice(11)
@@ -244,22 +253,28 @@ module.exports = {
         nf.end_time = event.end.slice(11)
         if (event.origin.length > 1) nf.origin.push(event.origin[1])
       }
+      // open form
       this.form = nf
       this.dialog = true
+      // stop from selecting time
       nativeEvent.stopPropagation()
     },
     // savePunch() {
 
     // },
     async addPunches() {
+      // convert datetime field strings into datetimes
       let ds = new Date(`${this.form.start_date} ${this.form.start_time}`).toISOString()
       let de = this.form.end_date ? new Date(`${this.form.end_date} ${this.form.end_time}`).toISOString() : null
+      // if this is a punch without an OUT time, set it up to submit a new single punch
       if (this.form.origin.length == 1 && this.form.end_time) {
         // date from start, time from end
         ds = new Date(`${this.form.start_date} ${this.form.end_time}`).toISOString()
         de = null
       }
+      // add punch(es)
       await this.punchClockFetch(this.user_id || null, ds, de, this.form.salary_at_time)
+      // close dialog and deselect times
       this.dialog = false
       this.timeSelect = []
     },
@@ -345,7 +360,7 @@ module.exports = {
       const resp = await fetch(`/punch${query}`);
       const data = await resp.json();
       this.punches = data.punches.map(o => {
-        // js date obj is up to milliseconds
+        // remove time smaller than seconds (after decimal)
         o.dt = new Date(o.timestamp.slice(0, 19) + 'Z')
         return o
       });
@@ -393,12 +408,14 @@ module.exports = {
     await this.fetchPunches();
   },
   watch: {
+    // if user_id changes, deselect datetimes and grab that user's punches
     user_id() {
       this.timeSelect = []
       this.fetchPunches()
     },
     form: {
       async handler(newValue, oldVaue) {
+        // if form.start_time changes, change salary to the closest salary
         if (`${newValue.start_time}` != `${oldVaue.start_time}`) {
           let salary = await this.getClosestSalary(`${newValue.start_date} ${newValue.start_time}`)
           if (salary !== null) {
