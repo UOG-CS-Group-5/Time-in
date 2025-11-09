@@ -26,7 +26,7 @@
             <v-main>
                 <v-container>
                     <!-- inputs the page here -->
-                    <!-- {{ }} is flask input in this case -->
+                    <!-- {{ componentName }} is flask input in this case -->
                     <!-- usually it's vue execution -->
                     <component 
                         :is="'{{ componentName }}'"
@@ -59,7 +59,7 @@
             components: {
                 // using httpVueLoader so we can have the
                 // convenience of using .vue files
-                // {{ }} here is executing on flask-side and 
+                // {{ componentName }} here is executing on flask-side and 
                 // including it in before being send to the browser
                 {{ componentName }}: httpVueLoader("{{ url_for('static', filename='js/components/' ~ componentName ~ '.vue') }}")
             },
