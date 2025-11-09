@@ -14,14 +14,17 @@ bp = Blueprint('punch', __name__)
 def get_closest_salary():
     """Endpoint to get the closest salary for a specified user
     at a given datetime (past punch preferred)."""
-    user_id = int(request.args.get('user_id', None))
+    user_id = request.args.get('user_id', None)
     date_str = request.args.get('datetime', None)
     if date_str is None:
         return 'before parameter is required', 400
     
     date = datetime.fromisoformat(date_str)
 
-    if user_id is None:
+    # if None or invalid user_id
+    try:
+        user_id = int(user_id)
+    except (ValueError, TypeError):
         return 'user_id parameter is required', 400
 
     user = User.query.get(user_id)

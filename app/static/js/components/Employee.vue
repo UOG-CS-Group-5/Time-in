@@ -8,6 +8,7 @@
 
         <punch-calendar
             :salary="salary"
+            :user_id="user_id"
         />
     </v-container>
 </template>
@@ -17,7 +18,8 @@ const PunchCalendar = httpVueLoader("/static/js/components/PunchCalendar.vue")
 
 module.exports = {
     props: {
-        salary: { type: Number, required: true }
+        salary: { type: Number, required: true },
+        user_id: { type: Number, required: true }
     },
     components: {
         PunchCalendar
