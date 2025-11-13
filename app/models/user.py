@@ -38,7 +38,7 @@ def create_example_employee():
 
         # add some example punches
         from app.services.punch_service import punch_clock
-        last_week = datetime.now(timezone.utc) - timedelta(days=8)
+        last_week = datetime.now(timezone.utc) - timedelta(days=7)
         last_week = last_week.replace(hour=0, minute=0)
         for i in range(7):
             # -10 for chst

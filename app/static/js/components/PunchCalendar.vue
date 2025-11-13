@@ -149,6 +149,7 @@ module.exports = {
       timeSelect: [],
       // form fields
       form: {...EMPTY_FORM},
+      prev_dialog: false,
       dialog: false,
       showStartTimeSelect: false,
       showEndTimeSelect: false,
@@ -415,8 +416,9 @@ module.exports = {
     },
     form: {
       async handler(newValue, oldVaue) {
-        // if form.start_time changes, change salary to the closest salary
-        if (`${newValue.start_time}` != `${oldVaue.start_time}`) {
+        // if form just opened or form.start_time changes, change salary to the closest salary
+        if (`${newValue.start_time}` != `${oldVaue.start_time}` || (
+            this.dialog && this.prev_dialog != this.dialog)) {
           let salary = await this.getClosestSalary(`${newValue.start_date} ${newValue.start_time}`)
           if (salary !== null) {
             this.form.salary_at_time = salary
@@ -424,6 +426,7 @@ module.exports = {
             this.form.salary_at_time = this.salary
           }
         }
+        this.prev_dialog = dialog
       },
       deep: true
     }

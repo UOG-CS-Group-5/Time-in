@@ -13,7 +13,9 @@ bp = Blueprint('punch', __name__)
 @admin_required
 def get_closest_salary():
     """Endpoint to get the closest salary for a specified user
-    at a given datetime (past punch preferred)."""
+    at a given datetime (past punch preferred).
+    If last punch, return user's current salary.
+    """
     user_id = request.args.get('user_id', None)
     date_str = request.args.get('datetime', None)
     if date_str is None:
@@ -31,16 +33,22 @@ def get_closest_salary():
     if user is None:
         return 'User not found', 404
 
+    last = get_last_punch(user)
+
     # check prev punch first then next punch
     try:
         closest_punch = get_prev_punch(user, date)
         if closest_punch is None:
             closest_punch = get_next_punch(user, date)
             if closest_punch is None:
-                return 'No punches found for user', 404
+                # no punches, return current salary
+                return { 'salary': user.salary }, 200
     except ValueError as ve:
         return str(ve), 400
 
+    if last.id == closest_punch.id and last.timestamp_utc < date:
+        # last punch, return current salary
+        return { 'salary': user.salary }, 200
     return { 'salary': closest_punch.salary_at_time }, 200
 
 @bp.route('/punch', methods=['POST'])
