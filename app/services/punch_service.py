@@ -82,8 +82,11 @@ def punch_clock(user, date_time=None, salary=None):
 
 # create a new punch record optionally with specified salary
 def save_punch(user, date_time=None, do_commit=True, salary=None):
+    now = datetime.now(timezone.utc)
     # standard to use UTC 
-    date_time = date_time or datetime.now(timezone.utc)
+    date_time = date_time or now
+    if date_time > now:
+        raise ValueError("Cannot punch with future timestamp.")
     # logic for punching clock in/out
     last = get_prev_punch(user, date_time)
 
