@@ -90,12 +90,12 @@
               </v-col>
             </v-row>
             <v-text-field
-                v-if="is_admin"
                 v-model="form.salary_at_time"
                 label="Salary"
                 type="number"
                 step="0.01"
-                required
+                :required="is_admin"
+                :disabled="!is_admin"
             ></v-text-field>
           </v-form>
         </v-card-text>
@@ -256,7 +256,7 @@ module.exports = {
       const nf = {...EMPTY_FORM, origin: []}
       nf.start_date = event.start.slice(0,10)
       nf.start_time = event.start.slice(11)
-      nf.salary_at_time = event.salary || this.salary
+      nf.salary_at_time = event.salary !== null && event.salary || this.salary
       if (event.origin.length > 0) nf.origin.push(event.origin[0])
       if (event.end) {
         nf.end_date = event.end.slice(0,10)
@@ -423,8 +423,15 @@ module.exports = {
       this.timeSelect = []
       this.fetchPunches()
     },
+    dialog(newValue, oldVaue) {
+      this.prev_dialog = oldVaue
+    },
     form: {
       async handler(newValue, oldVaue) {
+        // only adjust salary if the punch doesn't exist
+        if (this.form.origin.length !== 0) {
+          return
+        }
         // if form just opened or form.start_time changes, change salary to the closest salary
         if (`${newValue.start_time}` != `${oldVaue.start_time}` || (
             this.dialog && this.prev_dialog != this.dialog)) {
@@ -435,7 +442,6 @@ module.exports = {
             this.form.salary_at_time = this.salary
           }
         }
-        this.prev_dialog = dialog
       },
       deep: true
     }

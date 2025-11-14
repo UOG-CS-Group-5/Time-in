@@ -10,7 +10,6 @@ bp = Blueprint('punch', __name__)
 
 @bp.route('/punch/closest_salary', methods=['GET'])
 @login_required
-@admin_required
 def get_closest_salary():
     """Endpoint to get the closest salary for a specified user
     at a given datetime (past punch preferred).
@@ -28,6 +27,9 @@ def get_closest_salary():
         user_id = int(user_id)
     except (ValueError, TypeError):
         return 'user_id parameter is required', 400
+    
+    if (not current_user.is_admin) and user_id != current_user.id:
+        return 'Forbidden', 403
 
     user = User.query.get(user_id)
     if user is None:
