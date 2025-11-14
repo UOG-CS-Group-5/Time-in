@@ -479,6 +479,14 @@ module.exports = {
         sum += hours_elapsed * salary
       }
       return sum
+    },
+    async adjustSalary(date) {
+      let salary = await this.getClosestSalary(date)
+      if (salary !== null) {
+        this.form.salary_at_time = salary
+      } else {
+        this.form.salary_at_time = this.salary
+      }
     }
   },
   async mounted() {
@@ -492,6 +500,13 @@ module.exports = {
     },
     dialog(newValue, oldVaue) {
       this.prev_dialog = oldVaue
+      // only adjust salary if the punch doesn't exist
+      if (this.form.origin.length !== 0) {
+        return
+      }
+      if (newValue) {
+        this.adjustSalary(`${this.form.start_date} ${this.form.start_time}`)
+      }
     },
     form: {
       async handler(newValue, oldVaue) {
@@ -499,15 +514,10 @@ module.exports = {
         if (this.form.origin.length !== 0) {
           return
         }
-        // if form just opened or form.start_time changes, change salary to the closest salary
-        if (`${newValue.start_time}` != `${oldVaue.start_time}` || (
-            this.dialog && this.prev_dialog != this.dialog)) {
-          let salary = await this.getClosestSalary(`${newValue.start_date} ${newValue.start_time}`)
-          if (salary !== null) {
-            this.form.salary_at_time = salary
-          } else {
-            this.form.salary_at_time = this.salary
-          }
+        // if form form.start_time changes, 
+        // change salary to the closest salary
+        if (`${newValue.start_time}` != `${oldVaue.start_time}`) {
+          await this.adjustSalary(`${newValue.start_date} ${newValue.start_time}`)
         }
       },
       deep: true
