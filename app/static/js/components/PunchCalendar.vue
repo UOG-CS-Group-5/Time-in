@@ -89,14 +89,27 @@
                 </v-menu>
               </v-col>
             </v-row>
-            <v-text-field
-                v-model="form.salary_at_time"
-                label="Salary"
-                type="number"
-                step="0.01"
-                :required="is_admin"
-                :disabled="!is_admin"
-            ></v-text-field>
+              <v-row>
+                <v-col cols="6">
+                  <v-text-field
+                      v-model="form.salary_at_time"
+                      label="Salary"
+                      type="number"
+                      step="0.01"
+                      :required="is_admin"
+                      :disabled="!is_admin"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="6"
+                  class="d-flex align-center justify-center"
+                >
+                  <p class="ma-0"
+                    v-if="payForSelectedTime !== null"
+                  >
+                    Total Pay <b>${{ payForSelectedTime?.toFixed(2) }}</b>
+                  </p>
+                </v-col>
+              </v-row>
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -216,6 +229,23 @@ module.exports = {
         ret.push(punch)
       }
       return ret
+    },
+    payForSelectedTime() {
+      // only calculate pay if punch dialog is open
+      if (!this.dialog) {
+        return null;
+      }
+
+      // if both time fields have data, calculate pay
+      if (this.form.start_time && this.form.end_time) {
+        return this.calculatePay(
+          new Date(`${this.form.start_date} ${this.form.start_time}`), 
+          new Date(`${
+              this.form.end_date ? this.form.end_date : this.form.start_date
+            } ${this.form.end_time}`))
+      } else {
+        return null
+      }
     }
   },
   methods: {
@@ -369,9 +399,13 @@ module.exports = {
       }
       const resp = await fetch(`/punch${query}`);
       const data = await resp.json();
+      // track punch order for pay calculation later
+      let i = 0
       this.punches = data.punches.map(o => {
         // remove time smaller than seconds (after decimal)
         o.dt = new Date(o.timestamp.slice(0, 19) + 'Z')
+        o.i = i;
+        i += 1
         return o
       });
     },
@@ -412,6 +446,39 @@ module.exports = {
         console.log("Failed to get closest salary:", error);
         return null;
       }
+    },
+    calculatePay(start_date, end_date) {
+      let sum = 0
+      // start out with in date values 
+      // in case we start with an OUT punch
+      let in_date = start_date
+      // since we calculate it on form open
+      let salary = this.form.salary_at_time
+      let accounted_for = false
+      let ith = 0
+      this.punches
+        // filter punches within time range
+        .filter(({dt}) => start_date <= dt && dt <= end_date)
+        .forEach(({type, salary_at_time, dt, i}) => {
+          if (type == "IN") {
+            in_date = dt
+            salary = salary_at_time
+            accounted_for = false
+          } else {
+            hours_elapsed = (dt - in_date)/1000/60/60
+            sum += hours_elapsed * salary
+            accounted_for = true
+          }
+          ith = i
+        })
+      // clocked in time that wasn't accounted for
+      // if unaccounted for punch was last punch
+      // it's missing an end punch and we can ignore it
+      if (!accounted_for && ith !== this.punches.length - 1) {
+        hours_elapsed = (end_date - in_date)/1000/60/60
+        sum += hours_elapsed * salary
+      }
+      return sum
     }
   },
   async mounted() {
