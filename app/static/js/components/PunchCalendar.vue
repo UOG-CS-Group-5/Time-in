@@ -2,8 +2,17 @@
   <v-container>
 
     <v-row class="my-2" justify="space-between">
-      <v-btn color="primary" @click="prevWeek">prev week</v-btn>
-      <v-btn color="primary" @click="nextWeek">next week</v-btn>
+      <v-btn color="primary" @click="prevWeek">
+        <v-icon>mdi-arrow-left</v-icon>
+      </v-btn>
+      <div>
+        <v-btn color="primary" @click="() => punchClockFetch(user_id)">
+          <v-icon>mdi-clock</v-icon>
+        </v-btn>
+        <v-btn color="primary" @click="nextWeek">
+          <v-icon>mdi-arrow-right</v-icon>
+        </v-btn>
+      </div>
     </v-row>
 
     <v-calendar

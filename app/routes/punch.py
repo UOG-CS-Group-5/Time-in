@@ -65,7 +65,8 @@ def punch_clock_route():
     date_end_str = request.args.get('datetime_end', None)
     # errors out if float(None), but we'll ignore for now 
     # since I don't want to do the default
-    salary = float(request.args.get('salary', None))
+    salary = request.args.get('salary', None)
+    salary = float(salary) if salary is not None else None
 
     if (not current_user.is_admin) and user_id != current_user.id:
         return 'Forbidden', 403
@@ -89,7 +90,7 @@ def punch_clock_route():
 
     # if only a single date was given (which would mean a single 
     # punch is wanted) ensure it's after the last punch
-    if end_dt is None and last_punch and last_punch.timestamp_utc >= dt:
+    if end_dt is None and (dt is not None and last_punch and last_punch.timestamp_utc >= dt):
         return 'Cannot punch with earlier timestamp than last punch', 400
 
     ret = {
@@ -119,7 +120,7 @@ def punch_clock_route():
 def get_punches_route():
     """Endpoint to get all punches for the current user 
     (or specified user if admin)."""
-    user_id = request.args.get('user_id', current_user.id)
+    user_id = int(request.args.get('user_id', current_user.id))
     if (not current_user.is_admin) and user_id != current_user.id:
         return 'Forbidden', 403
 
