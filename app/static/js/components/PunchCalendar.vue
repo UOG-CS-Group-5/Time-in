@@ -1,6 +1,7 @@
 <template>
   <v-container>
 
+    <!-- Top Button Actions -->
     <v-row class="my-2" justify="space-between">
       <v-btn color="primary" @click="prevWeek">
         <v-icon>mdi-arrow-left</v-icon>
@@ -15,6 +16,7 @@
       </div>
     </v-row>
 
+    <!-- Calendar -->
     <v-calendar
       ref="calendar"
       v-model="currentDate"
@@ -158,6 +160,7 @@ const EMPTY_FORM = {
 
 module.exports = {
   name: "PunchCalendar",
+  // props: component parameters
   props: {
     user_id: { type: Number, required: false, default: null },
     is_admin: { type: Boolean, required: false, default: false },
@@ -172,7 +175,7 @@ module.exports = {
       // selected times
       timeSelect: [],
       // form fields
-      form: {...EMPTY_FORM},
+      form: {...EMPTY_FORM, origin: []},
       prev_dialog: false,
       dialog: false,
       showStartTimeSelect: false,
@@ -184,6 +187,8 @@ module.exports = {
     };
   },
   computed: {
+    // computed values
+    // get recomputed when their dependencies change
     formTitle() {
       let title = "Time Range"
       if (this.form.origin.length > 0) {
@@ -201,6 +206,8 @@ module.exports = {
       // into events with start/end times
       const ret = []
       let punch = {origin: []}
+      // convert punches into events 
+      // with a start and end time
       this.punches.forEach((p) => {
         const {id, type, salary_at_time, dt} = p
         // format date so calendar can use it
@@ -288,6 +295,8 @@ module.exports = {
       const nf = {...EMPTY_FORM, origin: []}
       nf.start_date = event.start.slice(0,10)
       nf.start_time = event.start.slice(11)
+      // use the event's salary if it exists otherwise
+      // the user's salary
       nf.salary_at_time = event.salary !== null && event.salary || this.salary
       if (event.origin.length > 0) nf.origin.push(event.origin[0])
       if (event.end) {
@@ -322,6 +331,7 @@ module.exports = {
     },
     async punchClockFetch(userId = null, datetime = null, datetimeEnd = null, salary = null) {
       try {
+        // add url params
         const params = new URLSearchParams();
 
         if (userId !== null) params.append('user_id', userId);
@@ -333,6 +343,7 @@ module.exports = {
 
         const response = await fetch(url, { method: 'POST' });
 
+        // display errors
         if (!response.ok) {
           const errorText = await response.text(); // backend returns string on error
           this.errorMessage = errorText;
@@ -342,6 +353,7 @@ module.exports = {
 
         const data = await response.json();
 
+        // update local punches list
         await this.fetchPunches();
 
         this.successMessage = `Punch${datetimeEnd ? 'es' : ''} added successfully`;
@@ -504,11 +516,17 @@ module.exports = {
         this.adjustSalary(`${this.form.start_date} ${this.form.start_time}`)
       }
     },
+    // watch specifically the start_time and end_time
+    // since watchers can't watch the deep form obj
+    // and still give different new/old values
     async 'form.start_time'(newValue, oldValue) {
       // only adjust salary if the punch doesn't exist
       if (this.form.origin.length !== 0 || newValue === null) {
         return
       }
+      // adjust selection
+      // need to create new array for vue to react
+      // and push to it so that we can have 1 or 2 long
       let nts = [new Date(`${this.form.start_date} ${newValue}`)]
       if (this.timeSelect.length > 1) {
         nts.push(this.timeSelect[1])
@@ -528,6 +546,7 @@ module.exports = {
       if (this.form.origin.length !== 0) {
         return
       }
+      // adjust selection
       this.timeSelect = [
         this.timeSelect[0],
         new Date(`${
