@@ -48,6 +48,7 @@
                       label="Start Time"
                       prepend-icon="mdi-clock-time-four-outline"
                       readonly
+                      :disabled="form.origin.length > 0"
                       v-bind="attrs"
                       v-on="on"
                       format="ampm"
@@ -76,6 +77,7 @@
                       label="End Time"
                       prepend-icon="mdi-clock-time-four-outline"
                       readonly
+                      :disabled="form.origin.length == 2"
                       v-bind="attrs"
                       v-on="on"
                       format="ampm"
