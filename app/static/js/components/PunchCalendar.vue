@@ -401,13 +401,9 @@ module.exports = {
       }
       const resp = await fetch(`/punch${query}`);
       const data = await resp.json();
-      // track punch order for pay calculation later
-      let i = 0
       this.punches = data.punches.map(o => {
         // remove time smaller than seconds (after decimal)
         o.dt = new Date(o.timestamp.slice(0, 19) + 'Z')
-        o.i = i;
-        i += 1
         return o
       });
     },
@@ -457,11 +453,10 @@ module.exports = {
       // since we calculate it on form open
       let salary = this.form.salary_at_time
       let accounted_for = false
-      let ith = 0
       this.punches
         // filter punches within time range
         .filter(({dt}) => start_date <= dt && dt <= end_date)
-        .forEach(({type, salary_at_time, dt, i}) => {
+        .forEach(({type, salary_at_time, dt}) => {
           if (type == "IN") {
             in_date = dt
             salary = salary_at_time
@@ -471,12 +466,11 @@ module.exports = {
             sum += hours_elapsed * salary
             accounted_for = true
           }
-          ith = i
         })
       // clocked in time that wasn't accounted for
-      // if unaccounted for punch was last punch
-      // it's missing an end punch and we can ignore it
-      if (!accounted_for && ith !== this.punches.length - 1) {
+      // unaccounted for is if it was clocked in but not out
+      // or if no punches were in the range
+      if (!accounted_for) {
         hours_elapsed = (end_date - in_date)/1000/60/60
         sum += hours_elapsed * salary
       }
