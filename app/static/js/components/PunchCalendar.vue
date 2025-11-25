@@ -494,8 +494,8 @@ module.exports = {
       this.timeSelect = []
       this.fetchPunches()
     },
-    dialog(newValue, oldVaue) {
-      this.prev_dialog = oldVaue
+    dialog(newValue, oldValue) {
+      this.prev_dialog = oldValue
       // only adjust salary if the punch doesn't exist
       if (this.form.origin.length !== 0) {
         return
@@ -504,20 +504,38 @@ module.exports = {
         this.adjustSalary(`${this.form.start_date} ${this.form.start_time}`)
       }
     },
-    form: {
-      async handler(newValue, oldVaue) {
-        // only adjust salary if the punch doesn't exist
-        if (this.form.origin.length !== 0) {
-          return
-        }
-        // if form form.start_time changes, 
-        // change salary to the closest salary
-        if (`${newValue.start_time}` != `${oldVaue.start_time}`) {
-          await this.adjustSalary(`${newValue.start_date} ${newValue.start_time}`)
-        }
-      },
-      deep: true
+    async 'form.start_time'(newValue, oldValue) {
+      // only adjust salary if the punch doesn't exist
+      if (this.form.origin.length !== 0 || newValue === null) {
+        return
+      }
+      let nts = [new Date(`${this.form.start_date} ${newValue}`)]
+      if (this.timeSelect.length > 1) {
+        nts.push(this.timeSelect[1])
+      }
+      this.timeSelect = nts
+      await this.adjustSalary(`${this.form.start_date} ${newValue}`)
+    },
+    'form.end_time'(newValue, oldValue) {
+      if (newValue === null) {
+        return
+      }
+      // we're not using timeSelect to display
+      // ones where an in-punch already existed
+      if (!this.form.end_date) {
+        this.form.end_date = this.form.start_date
+      }
+      if (this.form.origin.length !== 0) {
+        return
+      }
+      this.timeSelect = [
+        this.timeSelect[0],
+        new Date(`${
+          this.form.end_date ? this.form.end_date : this.form.start_date
+        } ${newValue}`)
+      ]
     }
+
   }
 };
 </script>
