@@ -18,5 +18,26 @@ module.exports = {
     components: {
         PunchCalendar
     },
+    // reactive data goes here
+    data: {
+
+    },
+    // computed variables
+    // get recomputed when their dependencies change
+    computed: {
+
+    },
+    // methods accessible to template go here
+    methods: {
+        
+    },
+    // do code once mounted onto DOM
+    mounted() {
+        
+    }
 }
 </script>
+
+<style>
+    /* custom styles for this component */
+</style>

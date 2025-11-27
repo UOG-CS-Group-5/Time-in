@@ -19,8 +19,11 @@ def login():
             # if isn't admin, punch clock
             if not user.is_admin:
                 punch_clock(user)
+            # redirect to home
             return redirect(url_for('general.home'))
+        # if missing user or password incorrect
         return 'Invalid credentials', 401
+    # GET request
     return render_template('login.html')
 
 @bp.route('/logout')

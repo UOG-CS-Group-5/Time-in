@@ -28,6 +28,8 @@
                     <!-- inputs the page here -->
                     <!-- {{ componentName }} is flask input in this case -->
                     <!-- usually it's vue execution -->
+                    <!-- note, 'null' is a string in flask but templated
+                     as a bareword in the formatted html -->
                     <component 
                         :is="'{{ componentName }}'"
                         :user_id="{{ g.user.id or 'null' }}"

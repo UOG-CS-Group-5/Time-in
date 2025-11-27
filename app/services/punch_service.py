@@ -44,6 +44,7 @@ def get_punches_in_range(user, start_datetime, end_datetime):
 
 # calculate total salary for punches in a datetime range
 # account for salary changes over punches
+# note: we did this calculation in the front-end instead
 def get_salary_for_range(user, start_datetime, end_datetime):
     punches = get_punches_in_range(user, start_datetime, end_datetime)
     total_salary = 0.0
@@ -96,6 +97,8 @@ def save_punch(user, date_time=None, do_commit=True, salary=None):
         else PunchType.OUT
     )
 
+    # should we add logic here to use closest salary?
+    # for now, just use current salary if not given
     salary = salary if salary is not None else user.salary
     if salary < 0:
         raise ValueError("Salary cannot be negative.")

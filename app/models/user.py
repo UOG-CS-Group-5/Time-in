@@ -40,6 +40,7 @@ def create_example_employee():
         from app.services.punch_service import punch_clock
         last_week = datetime.now(timezone.utc) - timedelta(days=7)
         last_week = last_week.replace(hour=0, minute=0)
+        # week worth of punches
         for i in range(7):
             # -10 for chst
             in_time = last_week + timedelta(days=i, hours=9-10, minutes=random.randint(0,60))

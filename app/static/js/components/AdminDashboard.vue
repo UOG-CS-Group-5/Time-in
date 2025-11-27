@@ -9,7 +9,9 @@
 
         <v-row>
             <v-col>
-                <!-- data table using the defined headers and items -->
+                <!-- users data table -->
+                <!-- v-model is selected_user and @click:row sets selected_user -->
+                <!-- allowing us to select a user -->
                 <v-data-table
                     :headers="headers"
                     :items="users"
@@ -25,6 +27,7 @@
                             <v-spacer></v-spacer>
                         </v-toolbar>
                     </template>
+                    <!-- each item.actions slot has a edit and delete user button -->
                     <template v-slot:item.actions="{ item }">
                         <!-- pencil to edit user -->
                         <v-btn icon @click="openEditUserDialog(item)">
@@ -45,6 +48,7 @@
 
         <v-row>
             <v-col>
+                <!-- punch calendar is the PunchCalendar component -->
                 <h2>Punch Calendar</h2>
                 <punch-calendar 
                     :user_id="selected_user_or_self"
@@ -54,7 +58,7 @@
             </v-col>
         </v-row>
 
-        <!-- Add/Edit User Dialog -->
+        <!-- Add/Edit User Dialog (popup) -->
         <v-dialog v-model="dialog" max-width="500px">
             <v-card>
                 <v-card-title>
@@ -67,6 +71,7 @@
                             label="Username"
                             required
                         ></v-text-field>
+                        <!-- if new user, require password -->
                         <v-text-field
                             v-model="form.password"
                             label="Password"
@@ -105,15 +110,20 @@
 const PunchCalendar = httpVueLoader("/static/js/components/PunchCalendar.vue")
 
 module.exports = {
+    // load component
     components: {
         PunchCalendar
     },
+    // this component's parameters
+    // we're pulling them from Flask templating in base.html
     props: {
         user_id: { type: Number, required: true },
         salary: { type: Number, required: true }
     },
     data() {
         return {
+            // must be an array. 
+            // will just be a single item in it
             selected_user: [],
             users: [],
             // headers for user table
@@ -124,6 +134,7 @@ module.exports = {
                 { text: "Salary", value: "salary" },
                 { text: "Actions", value: "actions", sortable: false },
             ],
+            // whether dialog is open or not
             dialog: false,
             // dialog form fields
             form: {
@@ -136,6 +147,7 @@ module.exports = {
             // variable to tell us what action to take
             // when adding or editing users
             isEdit: false,
+            // !!value is a common JS trick to turn a value into a boolean
             passwordRequired: value => !!value || 'Password is required',
             errorSnackbar: false,
             errorMessage: "",
@@ -180,19 +192,23 @@ module.exports = {
         },
         async saveUser() {
             try {
+                // choose url and method based on isEdit
                 const url = this.isEdit ? `/admin/users/${this.form.id}` : "/admin/users";
                 const method = this.isEdit ? "PUT" : "POST";
+                // do fetch with the form values
                 const response = await fetch(url, {
                     method,
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(this.form),
                 });
+                // if response isn't ok, show error
                 if (!response.ok) {
                     const errorData = await response.json();
                     this.errorMessage = errorData.error || "An error occurred.";
                     this.errorSnackbar = true;
                     return;
                 }
+                // if everything went ok, re-fetch users and close dialog
                 this.fetchUsers();
                 this.closeDialog();
             } catch (error) {

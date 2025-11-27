@@ -13,28 +13,35 @@ bp = Blueprint('admin', __name__, url_prefix='/admin')
 @admin_required
 def get_users():
     users = User.query.all()
+    # in reality, the User model should have a method to serialize itself,
+    # but we'll do it here
     user_list = [{'id': user.id, 'username': user.username, 
                   'is_admin': user.is_admin, 'salary': user.salary} 
                  for user in users]
     return jsonify(user_list)
 
+# note that route has user id as part of URL
 @bp.route('/users/<int:user_id>', methods=['PUT'])
 @login_required
 @admin_required
 def update_user(user_id):
     data = request.json
+    # 404s if not found
     user = User.query.get_or_404(user_id)
 
+    # for all items, if there's no new value, keep existing one
     new_salary = float(data.get('salary', user.salary))
     if new_salary < 0:
         return jsonify({'error': 'Salary cannot be negative'}), 400
     
     user.username = data.get('username', user.username)
-    # if no uploaded password, keep existing one
+
     user.password = (bcrypt.generate_password_hash(data['password']).decode('utf-8') 
                      if ('password' in data and data['password']) else user.password)
+    
     user.is_admin = data.get('is_admin', user.is_admin)
     user.salary = new_salary
+    # note we just need to update the user object then commit
     db.session.commit()
     return jsonify({'message': 'User updated successfully'})
 

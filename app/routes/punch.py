@@ -18,7 +18,7 @@ def get_closest_salary():
     user_id = request.args.get('user_id', None)
     date_str = request.args.get('datetime', None)
     if date_str is None:
-        return 'before parameter is required', 400
+        return 'datetime parameter is required', 400
     
     date = datetime.fromisoformat(date_str)
 
@@ -43,14 +43,15 @@ def get_closest_salary():
         if closest_punch is None:
             closest_punch = get_next_punch(user, date)
             if closest_punch is None:
-                # no punches, return current salary
+                # no punches exist, return current salary
                 return { 'salary': user.salary }, 200
     except ValueError as ve:
         return str(ve), 400
 
     if last.id == closest_punch.id and last.timestamp_utc < date:
-        # last punch, return current salary
+        # after last punch, return current salary
         return { 'salary': user.salary }, 200
+    # return salary at closest punch
     return { 'salary': closest_punch.salary_at_time }, 200
 
 @bp.route('/punch', methods=['POST'])
@@ -70,6 +71,7 @@ def punch_clock_route():
     salary = request.args.get('salary', None)
     salary = float(salary) if salary is not None else None
 
+    # sensible permission checks
     if (not current_user.is_admin) and user_id != current_user.id:
         return 'Forbidden', 403
     
@@ -99,6 +101,7 @@ def punch_clock_route():
         'new_punches': []
     }
     try:
+        # punch pair or single punch
         if end_dt is not None:
             ret['new_punches'] = [*insert_punches(user, dt, end_dt, salary)]
         else:
@@ -130,6 +133,8 @@ def get_punches_route():
     # better to do paging but we'll keep it simple
     punches = Punch.query.filter_by(user_id=user.id).order_by(Punch.timestamp.asc()).all()
 
+    # just like user, punch object should have serialize method
+    # but we'll do it here
     punch_list = [{
         'id': punch.id,
         'timestamp': punch.timestamp_utc.isoformat(),
@@ -146,6 +151,7 @@ def delete_punch_route():
     punch_id = request.args.get('punch_id', None)
     punch_end_id = request.args.get('punch_end_id', None)
 
+    # sensible checks
     if punch_id is None:
         return 'punch_id parameter is required', 400
 
