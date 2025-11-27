@@ -176,7 +176,6 @@ module.exports = {
       timeSelect: [],
       // form fields
       form: {...EMPTY_FORM, origin: []},
-      prev_dialog: false,
       dialog: false,
       showStartTimeSelect: false,
       showEndTimeSelect: false,
@@ -507,7 +506,6 @@ module.exports = {
       this.fetchPunches()
     },
     dialog(newValue, oldValue) {
-      this.prev_dialog = oldValue
       // only adjust salary if the punch doesn't exist
       if (this.form.origin.length !== 0) {
         return
