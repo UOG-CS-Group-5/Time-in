@@ -58,7 +58,7 @@
         <v-dialog v-model="dialog" max-width="500px">
             <v-card>
                 <v-card-title>
-                    <span class="headline">{{ dialogTitle }}</span>
+                    <span class="headline">{{ isEdit ? "Edit User" : "Add User" }}</span>
                 </v-card-title>
                 <v-card-text>
                     <v-form ref="form">
@@ -125,7 +125,7 @@ module.exports = {
                 { text: "Actions", value: "actions", sortable: false },
             ],
             dialog: false,
-            dialogTitle: "",
+            // dialog form fields
             form: {
                 id: null,
                 username: "",
@@ -169,13 +169,11 @@ module.exports = {
             this.selected_user = selected?.id === item.id ? [] : [item]
         },
         openAddUserDialog() {
-            this.dialogTitle = "Add User";
             this.isEdit = false;
             this.form = { id: null, username: "", password: "", is_admin: false, salary: 0.0 };
             this.dialog = true;
         },
         openEditUserDialog(user) {
-            this.dialogTitle = "Edit User";
             this.isEdit = true;
             this.form = { ...user, password: "" }; // Don't prefill the password
             this.dialog = true;
